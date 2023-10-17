@@ -1,12 +1,12 @@
 import { Schema, model } from 'mongoose'
-import { PlayerSchema } from './Player.js'
+import { gameConfig } from '../../config.js'
 
 const { ObjectId } = Schema
 
 const GameOptionsSchema = new Schema({
   target: {
     type: Number,
-    default: 50
+    default: gameConfig.score.default
   },
 })
 
@@ -22,7 +22,7 @@ export const GameSchema = new Schema({
   },
   options: GameOptionsSchema,
   players: {
-    type: [PlayerSchema],
+    type: [ObjectId],
     default: []
   }
 })
