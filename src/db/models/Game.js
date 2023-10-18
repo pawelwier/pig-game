@@ -7,7 +7,7 @@ const GameOptionsSchema = new Schema({
   target: {
     type: Number,
     default: gameConfig.score.default
-  },
+  }
 })
 
 export const GameSchema = new Schema({
@@ -16,9 +16,13 @@ export const GameSchema = new Schema({
     default: Date.now
   },
   createdBy: ObjectId,
-  current: {
+  currentPlayer: {
     type: ObjectId,
     default: null
+  },
+  currentScore: {
+    type: Number,
+    default: 0
   },
   options: GameOptionsSchema,
   players: {

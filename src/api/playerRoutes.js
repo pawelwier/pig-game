@@ -9,6 +9,7 @@ playerRouter.use((req, res, next) => {
   next()
 })
 
+// TODO: move code to functions
 playerRouter.get('/:playerId', async (req, res) => {
   const { playerId } = req.params
 

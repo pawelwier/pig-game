@@ -6,10 +6,6 @@ export const PlayerSchema = new Schema({
     type: Number,
     default: 0
   },
-  scoreTotal: {
-    type: Number,
-    default: 0
-  },
   isLoggedIn: {
     type: Boolean,
     default: false
