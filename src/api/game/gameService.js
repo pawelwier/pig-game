@@ -1,6 +1,23 @@
-import { GameModel } from "../../db/models/Game.js";
+import { GameModel, GameState } from "../../db/models/Game.js";
 
 export const getGameById = async ({ gameId }) => GameModel.findById(gameId)
+
+export const insertGame = async ({ playerId }) => {
+  return await GameModel.create({ 
+    createdBy: playerId,
+    players: [playerId]
+  })
+}
+
+export const startGame = async ({ gameId }) => {
+  const { createdBy } = await getGameById({ gameId })
+  await GameModel.findByIdAndUpdate(gameId, {
+    $set: {
+      state: GameState.ACTIVE,
+      currentPlayer: createdBy,
+    }
+  })
+}
 
 export const addPlayerToGame = async ({ gameId, playerId }) => {
   await GameModel.findByIdAndUpdate(gameId, {

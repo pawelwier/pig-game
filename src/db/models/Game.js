@@ -3,6 +3,12 @@ import { gameConfig } from '../../config.js'
 
 const { ObjectId } = Schema
 
+export const GameState = {
+  NEW: 'new',
+  ACTIVE: 'active',
+  FINISHED: 'finished'
+}
+
 const GameOptionsSchema = new Schema({
   target: {
     type: Number,
@@ -16,6 +22,11 @@ export const GameSchema = new Schema({
     default: Date.now
   },
   createdBy: ObjectId,
+  state: {
+    type: String,
+    enum: Object.values(GameState),
+    default: GameState.NEW
+  },
   currentPlayer: {
     type: ObjectId,
     default: null
