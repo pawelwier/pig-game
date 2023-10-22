@@ -1,12 +1,12 @@
 import express, { json } from 'express'
-import { dbConnect } from "./db/fn/connect.js"
+import { dbConnect, webSocketConnect } from "./connections/connect.js"
 import { playerRouter } from './api/player/playerRoutes.js'
 import { gameRouter } from './api/game/gameRoutes.js'
-import { updateCurrentScore } from './api/game/gameService.js'
 
 const app = express()
 
 dbConnect()
+webSocketConnect()
 
 app.use(json())
 
