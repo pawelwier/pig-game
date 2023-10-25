@@ -1,6 +1,6 @@
 import express from 'express'
 import { 
-  addPlayer, addToCurrentScore, createGame, findGameById, setCurrentPlayerId, start, takePoints
+  addPlayer, addToCurrentScore, createGame, findGameById, getGamePlayers, setCurrentPlayerId, start, takePoints
 } from './gameController.js'
 
 export const gameRouter = express.Router()
@@ -11,6 +11,7 @@ gameRouter.use((req, res, next) => {
 })
 
 gameRouter.get('/:gameId', findGameById)
+gameRouter.get('/players/:gameId', getGamePlayers)
 gameRouter.post('/', createGame)
 gameRouter.post('/start/:gameId', start)
 gameRouter.post('/add-player/:gameId', addPlayer)

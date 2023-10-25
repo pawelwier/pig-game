@@ -1,5 +1,5 @@
 import express from 'express'
-import { createPlayer, getPlayerById } from './playerController.js'
+import { createPlayer, findPlayerById } from './playerController.js'
 
 export const playerRouter = express.Router()
 
@@ -8,5 +8,5 @@ playerRouter.use((req, res, next) => {
   next()
 })
 
-playerRouter.get('/:playerId', getPlayerById)
+playerRouter.get('/:playerId', findPlayerById)
 playerRouter.post('/', createPlayer)

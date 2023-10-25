@@ -1,7 +1,7 @@
 import { isValidObjectId } from 'mongoose'
-import { insertPlayer } from './playerService.js'
+import { getPlayerById, insertPlayer } from './playerService.js'
 
-export const getPlayerById = async (req, res) => {
+export const findPlayerById = async (req, res) => {
   const { playerId } = req.params
 
   if (!isValidObjectId(playerId)) {
@@ -9,9 +9,7 @@ export const getPlayerById = async (req, res) => {
     return
   }
 
-  const player = await getPlayerById(playerId)
-  
-  res.send(player?.name || 'Player not found')
+  res.send(getPlayerById(playerId))
 }
 
 export const createPlayer = async (req, res) => {

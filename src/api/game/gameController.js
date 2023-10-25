@@ -1,5 +1,6 @@
 import { isValidObjectId } from "mongoose"
-import { addPlayerToGame, getGameById, insertGame, startGame, updateCurrentPlayerId, updateCurrentScore } from "./gameService.js"
+import { addPlayerToGame, getGameById, getGamePlayerData, insertGame, startGame, 
+  updateCurrentPlayerId, updateCurrentScore } from "./gameService.js"
 import { getNextPlayerId } from "./gameHelpers.js"
 import { getPlayerById, updatePlayerScore } from "../player/playerService.js"
 import { gameConfig } from "../../config.js"
@@ -116,4 +117,17 @@ export const addToCurrentScore = async (req, res) => {
   await updateCurrentScore({ gameId, score, increase: true })
 
   res.send('Score updateed')
+}
+
+export const getGamePlayers = async (req, res) => {
+  const { params: { gameId }} = req
+
+  if (!isValidObjectId(gameId)) {
+    res.send('Invalid request')
+    return
+  }
+
+  const players = await getGamePlayerData({ gameId })
+
+  res.json({ players })
 }

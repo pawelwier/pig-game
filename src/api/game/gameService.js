@@ -1,4 +1,7 @@
+import { gameConfig } from "../../config.js";
 import { GameModel, GameState } from "../../db/models/Game.js";
+import { getPlayerById } from "../player/playerService.js";
+import { getNextPlayerId } from "./gameHelpers.js";
 
 export const getGameById = async ({ gameId }) => GameModel.findById(gameId)
 
@@ -42,4 +45,32 @@ export const updateCurrentScore = async ({ gameId, score, increase = false }) =>
       currentScore: score
     }
   })
+}
+
+export const rollNumber = async ({ gameId, score }) => {
+  let increase = true
+  let newScore = score
+
+  const isZero = gameConfig.losingNumbers.includes(Number(score))
+  const game = await getGameById({ gameId })
+
+  if (isZero) {
+    const opponentId = getNextPlayerId({ game })
+    await updateCurrentPlayerId({ gameId, playerId: opponentId })
+    increase = false
+    newScore = 0
+  }
+
+  await updateCurrentScore({ gameId, score: newScore, increase })
+
+  return {
+    newScore,
+    total: isZero ? 0 : game.currentScore + newScore // TODO: refactor?
+  }
+}
+
+export const getGamePlayerData = async ({ gameId }) => {
+  const game = await getGameById({ gameId })
+  const { players } = game
+  return await Promise.all(players.map(async playerId => await getPlayerById({ playerId })))
 }

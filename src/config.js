@@ -4,5 +4,6 @@ export const gameConfig = {
     min: 10,
     max: 1000
   },
-  maxPlayers: 2
+  maxPlayers: 2,
+  losingNumbers: [1]
 }

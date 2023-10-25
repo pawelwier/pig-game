@@ -2,9 +2,17 @@ import http from 'http'
 import { connect } from 'mongoose'
 import WS from 'websocket'
 import * as dotenv from "dotenv"
+import { getPlayerById, updatePlayerScore } from '../api/player/playerService.js'
+import { getGameById, rollNumber, updateCurrentPlayerId, updateCurrentScore } from '../api/game/gameService.js'
+import { getNextPlayerId } from '../api/game/gameHelpers.js'
 
 dotenv.config()
 const WebSocketServer = WS.server
+
+export const MessageTypes = {
+  ADD: 'add',
+  TAKE: 'take'
+}
 
 /* mongo */
 export const dbConnect = () => {
@@ -40,10 +48,32 @@ export const webSocketConnect = () => {
     const connection = req.accept('echo-protocol', req.origin)
     console.log((new Date()) + ' Connection accepted.')
 
-    connection.on('message', message => {
-      console.log('Received Message: ' + message.utf8Data)
-      connection.sendUTF(message.utf8Data)
-    });
+    connection.on('message', async message => {
+      const data = JSON.parse(message.utf8Data)
+      const { type, gameId } = data
+      const game = await getGameById({ gameId })
+
+      // TODO: move out, refactor
+      if (type === MessageTypes.ADD) { 
+        const { score } = data
+        const rollResponse = await rollNumber({ gameId, score })
+
+        connection.sendUTF(JSON.stringify({ ...rollResponse, type }))
+        return
+      }
+      else if (type === MessageTypes.TAKE) {
+        const { currentPlayer, currentScore } = game
+        const player = await getPlayerById({ playerId: currentPlayer })
+        const opponentId = getNextPlayerId({ game })
+      
+        await updatePlayerScore({ playerId: player._id,  score: currentScore })
+        await updateCurrentPlayerId({ gameId, playerId: opponentId })
+        await updateCurrentScore({ gameId, score: 0 })
+
+        connection.sendUTF(JSON.stringify({ currentPlayer: opponentId, type }))
+      }
+    })
+
     connection.on('close', (reasonCode, description) => {
       console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.')
     })
