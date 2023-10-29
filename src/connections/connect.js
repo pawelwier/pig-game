@@ -9,6 +9,8 @@ import { getNextPlayerId } from '../api/game/gameHelpers.js'
 dotenv.config()
 const WebSocketServer = WS.server
 
+const port = process.env.PORT || 3000
+
 export const MessageTypes = {
   ADD: 'add',
   TAKE: 'take'
@@ -87,7 +89,7 @@ export const webSocketConnect = () => {
     })
   })
   
-  webSocketServer.listen(2323, () => {
-    console.log(new Date() + ' Server is listening on port 2323')
+  webSocketServer.listen(port, () => {
+    console.log(new Date() + ' WS Server is listening on port, ', port)
   })
 }
