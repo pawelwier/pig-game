@@ -1,9 +1,15 @@
 import { isValidObjectId } from "mongoose"
-import { addPlayerToGame, getGameById, getGamePlayerData, insertGame, startGame, 
+import { addPlayerToGame, getGameById, getGamePlayerData, getGames, insertGame, startGame, 
   updateCurrentPlayerId, updateCurrentScore } from "./gameService.js"
 import { getNextPlayerId } from "./gameHelpers.js"
 import { getPlayerById, updatePlayerScore } from "../player/playerService.js"
 import { gameConfig } from "../../config.js"
+
+export const findGames = async (req, res) => {
+  const games = await getGames()
+  
+  res.json(games)
+}
 
 export const findGameById = async (req, res) => {
   const { gameId } = req.params
@@ -129,5 +135,5 @@ export const getGamePlayers = async (req, res) => {
 
   const players = await getGamePlayerData({ gameId })
 
-  res.json({ players })
+  res.json(players)
 }

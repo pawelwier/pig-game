@@ -9,7 +9,7 @@ export const findPlayerById = async (req, res) => {
     return
   }
 
-  res.send(getPlayerById(playerId))
+  res.send(await getPlayerById({ playerId }))
 }
 
 export const createPlayer = async (req, res) => {

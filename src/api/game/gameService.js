@@ -1,7 +1,9 @@
-import { gameConfig } from "../../config.js";
-import { GameModel, GameState } from "../../db/models/Game.js";
-import { getPlayerById } from "../player/playerService.js";
-import { getNextPlayerId } from "./gameHelpers.js";
+import { gameConfig } from "../../config.js"
+import { GameModel, GameState } from "../../db/models/Game.js"
+import { getPlayerById } from "../player/playerService.js"
+import { getNextPlayerId } from "./gameHelpers.js"
+
+export const getGames = async () => GameModel.find({})
 
 export const getGameById = async ({ gameId }) => GameModel.findById(gameId)
 
@@ -47,25 +49,24 @@ export const updateCurrentScore = async ({ gameId, score, increase = false }) =>
   })
 }
 
-export const rollNumber = async ({ gameId, score }) => {
+export const rollNumber = async ({ gameId, points }) => {
   let increase = true
-  let newScore = score
   let currentPlayer
 
-  const isZero = gameConfig.losingNumbers.includes(Number(score))
+  const isZero = gameConfig.losingNumbers.includes(Number(points))
   const game = await getGameById({ gameId })
 
   if (isZero) {
     const opponentId = getNextPlayerId({ game })
     await updateCurrentPlayerId({ gameId, playerId: opponentId })
     increase = false
-    newScore = 0
+    points = 0
     currentPlayer = opponentId
   }
 
-  await updateCurrentScore({ gameId, score: newScore, increase })
+  await updateCurrentScore({ gameId, score: points, increase })
 
-  return { currentPlayer }
+  return { points, currentPlayer }
 }
 
 export const getGamePlayerData = async ({ gameId }) => {

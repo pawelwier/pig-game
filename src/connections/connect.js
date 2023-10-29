@@ -31,12 +31,14 @@ const originIsAllowed = origin => {
   // TODO: add conditions
   return true;
 }
+const connections = []
 
 export const webSocketConnect = () => {
   const wsServer = new WebSocketServer({
     httpServer: webSocketServer,
     autoAcceptConnections: false
   })
+
   
   wsServer.on('request', req => {
     if (!originIsAllowed(req.origin)) {
@@ -45,8 +47,10 @@ export const webSocketConnect = () => {
       return
     }
     
-    const connection = req.accept('echo-protocol', req.origin)
+    const connection = req.accept('pig-game-protocol', req.origin)
+    connections.push(connection)
     console.log((new Date()) + ' Connection accepted.')
+    console.log('connections:', connections?.length)
 
     connection.on('message', async message => {
       const data = JSON.parse(message.utf8Data)
@@ -55,10 +59,12 @@ export const webSocketConnect = () => {
 
       // TODO: move out, refactor
       if (type === MessageTypes.ADD) { 
-        const { score } = data
-        const rollResponse = await rollNumber({ gameId, score })
+        const { points } = data
+        const rollResponse = await rollNumber({ gameId, points })
 
-        connection.sendUTF(JSON.stringify({ ...rollResponse, type }))
+        connections.forEach(conn => {
+          conn.sendUTF(JSON.stringify({ ...rollResponse, type }))
+        })
         return
       }
       else if (type === MessageTypes.TAKE) {
@@ -70,7 +76,9 @@ export const webSocketConnect = () => {
         await updateCurrentPlayerId({ gameId, playerId: opponentId })
         await updateCurrentScore({ gameId, score: 0 })
 
-        connection.sendUTF(JSON.stringify({ currentPlayer: opponentId, type }))
+        connections.forEach(conn => {
+          conn.sendUTF(JSON.stringify({ currentPlayer: opponentId, type }))
+        })
       }
     })
 
