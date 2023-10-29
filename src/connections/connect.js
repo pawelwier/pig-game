@@ -89,7 +89,12 @@ export const webSocketConnect = () => {
     })
   })
   
-  webSocketServer.listen(port, () => {
-    console.log(new Date() + ' WS Server is listening on port, ', port)
-  })
+  try {
+    webSocketServer.listen(port, () => {
+      console.log(new Date() + ' WS Server is listening on port, ', port)
+    })
+  } catch(err) {
+    console.log('error', err?.code)
+    console.log(err)
+  }
 }
