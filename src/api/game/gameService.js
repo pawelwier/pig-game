@@ -50,6 +50,7 @@ export const updateCurrentScore = async ({ gameId, score, increase = false }) =>
 export const rollNumber = async ({ gameId, score }) => {
   let increase = true
   let newScore = score
+  let currentPlayer
 
   const isZero = gameConfig.losingNumbers.includes(Number(score))
   const game = await getGameById({ gameId })
@@ -59,14 +60,12 @@ export const rollNumber = async ({ gameId, score }) => {
     await updateCurrentPlayerId({ gameId, playerId: opponentId })
     increase = false
     newScore = 0
+    currentPlayer = opponentId
   }
 
   await updateCurrentScore({ gameId, score: newScore, increase })
 
-  return {
-    newScore,
-    total: isZero ? 0 : game.currentScore + newScore // TODO: refactor?
-  }
+  return { currentPlayer }
 }
 
 export const getGamePlayerData = async ({ gameId }) => {
