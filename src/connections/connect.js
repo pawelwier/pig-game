@@ -9,7 +9,7 @@ import { getNextPlayerId } from '../api/game/gameHelpers.js'
 dotenv.config()
 const WebSocketServer = WS.server
 
-const port = process.env.PORT || 3000
+const port = process.env.WS_PORT || 7700
 
 export const MessageTypes = {
   ADD: 'add',
