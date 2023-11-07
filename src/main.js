@@ -6,7 +6,7 @@ import { gameRouter } from './api/game/gameRoutes.js'
 
 const app = express()
 
-const port = process.env.PORT || 1212
+const port = process.env.API_PORT || 1212
 
 dbConnect()
 webSocketConnect()
@@ -17,4 +17,4 @@ app.use(cors())
 app.use('/player', playerRouter)
 app.use('/game', gameRouter)
 
-app.listen(port, () => `listening on port ${port}`)
+app.listen(port, () => { console.log(`api listening on port ${port}`) })

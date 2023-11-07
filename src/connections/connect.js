@@ -41,16 +41,19 @@ export const webSocketConnect = () => {
     autoAcceptConnections: false
   })
 
+  wsServer.on('connect', webSocketConnection => {
+    console.log('ws connected on', webSocketConnection.remoteAddress)
+  })
   
   wsServer.on('request', req => {
     if (!originIsAllowed(req.origin)) {
       req.reject()
-      console.log((new Date()) + ' Connection from origin ' + req.origin + ' rejected.')
+      console.log((new Date()) + ` Connection from origin ${req.origin} rejected.`)
       return
     }
     
     const connection = req.accept('pig-game-protocol', req.origin)
-    connections.push(connection)
+    connections.push(connection) // TODO: replace with .connections property?
     console.log((new Date()) + ' Connection accepted.')
     console.log('connections:', connections?.length)
 
