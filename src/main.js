@@ -1,20 +1,10 @@
-import express, { json } from 'express'
-import cors from 'cors'
-import { dbConnect, webSocketConnect } from "./connections/connect.js"
-import { playerRouter } from './api/player/playerRoutes.js'
-import { gameRouter } from './api/game/gameRoutes.js'
+import { webSocketConnect } from './connections/server.js'
+import { dbConnect } from './connections/db.js'
 
-const app = express()
-
-const port = process.env.PORT || process.env.SERVER_PORT
-
+/* connect to mongo */
 dbConnect()
+
+/* connect to http/ws server */
 webSocketConnect()
 
-app.use(json())
-app.use(cors())
-
-app.use('/player', playerRouter)
-app.use('/game', gameRouter)
-
-// app.listen(port, () => { console.log(`api listening on port ${port}`) })
+/* TODO: delete express route files, refactor/clear controller, service fns */

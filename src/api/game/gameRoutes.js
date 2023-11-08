@@ -1,3 +1,4 @@
+/*
 import express from 'express'
 import { 
   addPlayer, addToCurrentScore, createGame, findGameById, findGames, getGamePlayers,
@@ -20,3 +21,4 @@ gameRouter.post('/add-player/:gameId', addPlayer)
 gameRouter.post('/current/:gameId', setCurrentPlayerId) // TODO: delete?
 gameRouter.post('/add-score/:gameId', addToCurrentScore)
 gameRouter.post('/take/:gameId', takePoints)
+*/

@@ -1,3 +1,4 @@
+/*
 import express from 'express'
 import { createPlayer, findPlayerById } from './playerController.js'
 
@@ -10,3 +11,4 @@ playerRouter.use((req, res, next) => {
 
 playerRouter.get('/:playerId', findPlayerById)
 playerRouter.post('/', createPlayer)
+*/

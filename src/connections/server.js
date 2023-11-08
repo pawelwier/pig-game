@@ -1,17 +1,13 @@
 import http from 'http'
-import url from 'url'
-import { connect } from 'mongoose'
 import WS from 'websocket'
-import * as dotenv from "dotenv"
+import * as dotenv from 'dotenv'
 import { getPlayerById, updatePlayerScore } from '../api/player/playerService.js'
 import { getGameById, rollNumber, updateCurrentPlayerId, updateCurrentScore } from '../api/game/gameService.js'
 import { getNextPlayerId } from '../api/game/gameHelpers.js'
-import { findGameById, findGames, getGamePlayers } from '../api/game/gameController.js'
-import { findPlayerById } from '../api/player/playerController.js'
-
-// TODO: If works, refactor all
+import { handleRequests } from '../api/requestHandler.js'
 
 dotenv.config()
+
 const WebSocketServer = WS.server
 
 const port = process.env.PORT || process.env.SERVER_PORT
@@ -21,46 +17,13 @@ export const MessageTypes = {
   TAKE: 'take'
 }
 
-/* mongo */
-export const dbConnect = () => {
-  const uri = `mongodb+srv://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}@test.fdk5v31.mongodb.net/${process.env.MONGO_DB_NAME}`
-  connect(uri)
-}
-
-const getUrlNoParams = url => url?.split('?')[0] || ''
-
-const reqListener = async (req, res) => {
-  res.setHeader('Content-Type', 'application/json')
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, POST, GET')
-  res.setHeader('Access-Control-Max-Age', 2592000)
-  switch (getUrlNoParams(req.url)) {
-    case '/game':
-      const parsed = url.parse(req.url, true)
-      const { query: { gameId } } = parsed
-      if (gameId) {
-        const game = await getGameById({ gameId })
-        res.end(JSON.stringify(game))
-      } else await findGames(req, res)
-      break
-    case '/game-players':
-      await getGamePlayers(req, res)
-      break
-    case '/player':
-      await findPlayerById(req, res)
-      break
-  }
-}
-
 /* websocket */
-const webSocketServer = http.createServer(reqListener)
+const webSocketServer = http.createServer(handleRequests)
 
 const originIsAllowed = origin => {
   // TODO: add conditions
   return true;
 }
-const connections = []
-
 export const webSocketConnect = () => {
   const wsServer = new WebSocketServer({
     httpServer: webSocketServer,
@@ -68,7 +31,7 @@ export const webSocketConnect = () => {
   })
 
   wsServer.on('connect', webSocketConnection => {
-    console.log('ws connected on', webSocketConnection.remoteAddress)
+    webSocketServer.getConnections((err, count) => { console.log('count', count) })
   })
   
   wsServer.on('request', req => {
@@ -79,10 +42,8 @@ export const webSocketConnect = () => {
     }
     
     const connection = req.accept('pig-game-protocol', req.origin)
-    connections.push(connection) // TODO: replace with .connections property?
     console.log((new Date()) + ' Connection accepted.')
-    console.log('connections:', connections?.length)
-
+    
     connection.on('message', async message => {
       const data = JSON.parse(message.utf8Data)
       const { type, gameId } = data
@@ -93,7 +54,7 @@ export const webSocketConnect = () => {
         const { points } = data
         const rollResponse = await rollNumber({ gameId, points })
 
-        connections.forEach(conn => {
+        wsServer.connections.forEach(conn => {
           conn.sendUTF(JSON.stringify({ ...rollResponse, type }))
         })
         return
@@ -107,7 +68,7 @@ export const webSocketConnect = () => {
         await updateCurrentPlayerId({ gameId, playerId: opponentId })
         await updateCurrentScore({ gameId, score: 0 })
 
-        connections.forEach(conn => {
+        wsServer.connections.forEach(conn => {
           conn.sendUTF(JSON.stringify({ currentPlayer: opponentId, type }))
         })
       }
