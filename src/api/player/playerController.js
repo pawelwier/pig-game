@@ -1,15 +1,19 @@
+import url from 'url'
 import { isValidObjectId } from 'mongoose'
 import { getPlayerById, insertPlayer } from './playerService.js'
 
 export const findPlayerById = async (req, res) => {
-  const { playerId } = req.params
+  const parsed = url.parse(req.url, true);
+  const { query: { playerId } } = parsed
 
   if (!isValidObjectId(playerId)) {
-    res.send('Invalid player id')
+    res.end('Invalid player id')
     return
   }
 
-  res.send(await getPlayerById({ playerId }))
+  const player = await getPlayerById({ playerId })
+
+  res.end(JSON.stringify(player))
 }
 
 export const createPlayer = async (req, res) => {

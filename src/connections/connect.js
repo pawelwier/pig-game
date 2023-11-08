@@ -1,15 +1,20 @@
 import http from 'http'
+import url from 'url'
 import { connect } from 'mongoose'
 import WS from 'websocket'
 import * as dotenv from "dotenv"
 import { getPlayerById, updatePlayerScore } from '../api/player/playerService.js'
 import { getGameById, rollNumber, updateCurrentPlayerId, updateCurrentScore } from '../api/game/gameService.js'
 import { getNextPlayerId } from '../api/game/gameHelpers.js'
+import { findGameById, findGames, getGamePlayers } from '../api/game/gameController.js'
+import { findPlayerById } from '../api/player/playerController.js'
+
+// TODO: If works, refactor all
 
 dotenv.config()
 const WebSocketServer = WS.server
 
-const port = process.env.PORT || process.env.WS_PORT
+const port = process.env.PORT || process.env.SERVER_PORT
 
 export const MessageTypes = {
   ADD: 'add',
@@ -22,12 +27,33 @@ export const dbConnect = () => {
   connect(uri)
 }
 
+const getUrlNoParams = url => url?.split('?')[0] || ''
+
+const reqListener = async (req, res) => {
+  res.setHeader('Content-Type', 'application/json')
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, POST, GET')
+  res.setHeader('Access-Control-Max-Age', 2592000)
+  switch (getUrlNoParams(req.url)) {
+    case '/game':
+      const parsed = url.parse(req.url, true)
+      const { query: { gameId } } = parsed
+      if (gameId) {
+        const game = await getGameById({ gameId })
+        res.end(JSON.stringify(game))
+      } else await findGames(req, res)
+      break
+    case '/game-players':
+      await getGamePlayers(req, res)
+      break
+    case '/player':
+      await findPlayerById(req, res)
+      break
+  }
+}
+
 /* websocket */
-const webSocketServer = http.createServer((req, res) => {
-  console.log(`${new Date()} Received request for ${req.url}`)
-  res.writeHead(404)
-  res.end()
-})
+const webSocketServer = http.createServer(reqListener)
 
 const originIsAllowed = origin => {
   // TODO: add conditions

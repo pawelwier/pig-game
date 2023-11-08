@@ -1,3 +1,4 @@
+import url from 'url'
 import { isValidObjectId } from "mongoose"
 import { addPlayerToGame, getGameById, getGamePlayerData, getGames, insertGame, startGame, 
   updateCurrentPlayerId, updateCurrentScore } from "./gameService.js"
@@ -8,11 +9,12 @@ import { gameConfig } from "../../config.js"
 export const findGames = async (req, res) => {
   const games = await getGames()
   
-  res.json(games)
+  res.end(JSON.stringify(games))
 }
 
 export const findGameById = async (req, res) => {
-  const { gameId } = req.params
+  const parsed = url.parse(req.url, true)
+  const { query: { gameId } } = parsed
 
   if (!isValidObjectId(gameId)) {
     res.send('Invalid game id')
@@ -21,7 +23,7 @@ export const findGameById = async (req, res) => {
 
   const game = await getGameById({ gameId })
   
-  res.json(game)
+  res.end(JSON.stringify(game))
 }
 
 export const createGame = async (req, res) => {
@@ -122,18 +124,19 @@ export const addToCurrentScore = async (req, res) => {
 
   await updateCurrentScore({ gameId, score, increase: true })
 
-  res.send('Score updateed')
+  res.send('Score updated')
 }
 
 export const getGamePlayers = async (req, res) => {
-  const { params: { gameId }} = req
+  const parsed = url.parse(req.url, true);
+  const { query: { gameId } } = parsed
 
   if (!isValidObjectId(gameId)) {
-    res.send('Invalid request')
+    res.end('Invalid request')
     return
   }
 
   const players = await getGamePlayerData({ gameId })
 
-  res.json(players)
+  res.end(JSON.stringify(players))
 }
