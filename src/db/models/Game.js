@@ -22,6 +22,10 @@ export const GameSchema = new Schema({
     default: Date.now
   },
   createdBy: ObjectId,
+  name: {
+    type: String,
+    default: 'New Game'
+  },
   state: {
     type: String,
     enum: Object.values(GameState),

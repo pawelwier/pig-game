@@ -6,9 +6,10 @@ export const insertPlayer = async ({ name }) => {
 
 export const getPlayerById = async ({ playerId }) => await PlayerModel.findById(playerId)
 
-export const updatePlayerScore = async ({ playerId, score }) => {
+export const updatePlayerScore = async ({ playerId, score, increase = false }) => {
+  const operator = increase ? '$inc' : '$set'
   await PlayerModel.findByIdAndUpdate(playerId, {
-    $inc: {
+    [operator]: {
       score
     }
   })

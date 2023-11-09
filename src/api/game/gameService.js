@@ -1,6 +1,6 @@
 import { gameConfig } from "../../config.js"
 import { GameModel, GameState } from "../../db/models/Game.js"
-import { getPlayerById } from "../player/playerService.js"
+import { getPlayerById, updatePlayerScore } from "../player/playerService.js"
 import { getNextPlayerId } from "./gameHelpers.js"
 
 export const getGames = async () => GameModel.find({})
@@ -73,4 +73,29 @@ export const getGamePlayerData = async ({ gameId }) => {
   const game = await getGameById({ gameId })
   const { players } = game
   return await Promise.all(players.map(async playerId => await getPlayerById({ playerId })))
+}
+
+export const setGameState = async ({ gameId, state }) => {
+  await GameModel.findByIdAndUpdate(gameId, {
+    $set: {
+      state
+    }
+  })
+}
+
+export const restartGame = async ({ gameId, currentPlayer }) => {
+  await GameModel.findByIdAndUpdate(gameId, {
+    $set: {
+      state: GameState.NEW,
+      currentPlayer,
+    }
+  })
+
+  await updateCurrentScore({ gameId, score: 0 })
+
+  const players = await getGamePlayerData({ gameId })
+
+  console.log(players)
+
+  await Promise.all(players.map(async playerId => await updatePlayerScore({ playerId, score: 0 })))
 }

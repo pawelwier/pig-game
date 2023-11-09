@@ -2,9 +2,10 @@ import http from 'http'
 import WS from 'websocket'
 import * as dotenv from 'dotenv'
 import { getPlayerById, updatePlayerScore } from '../api/player/playerService.js'
-import { getGameById, rollNumber, updateCurrentPlayerId, updateCurrentScore } from '../api/game/gameService.js'
+import { getGameById, restartGame, rollNumber, setGameState, updateCurrentPlayerId, updateCurrentScore } from '../api/game/gameService.js'
 import { getNextPlayerId } from '../api/game/gameHelpers.js'
 import { handleRequests } from '../api/requestHandler.js'
+import { GameState } from '../db/models/Game.js'
 
 dotenv.config()
 
@@ -14,7 +15,8 @@ const port = process.env.PORT || process.env.SERVER_PORT
 
 export const MessageTypes = {
   ADD: 'add',
-  TAKE: 'take'
+  TAKE: 'take',
+  RESTART: 'restart',
 }
 
 /* websocket */
@@ -60,16 +62,38 @@ export const webSocketConnect = () => {
         return
       }
       else if (type === MessageTypes.TAKE) {
-        const { currentPlayer, currentScore } = game
+        const { currentPlayer, currentScore, options: { target } } = game
         const player = await getPlayerById({ playerId: currentPlayer })
         const opponentId = getNextPlayerId({ game })
       
-        await updatePlayerScore({ playerId: player._id,  score: currentScore })
-        await updateCurrentPlayerId({ gameId, playerId: opponentId })
+        await updatePlayerScore({ playerId: player._id,  score: currentScore, increase: true })
         await updateCurrentScore({ gameId, score: 0 })
+        
+        const isWinner = (player.score + currentScore) >= target
+        console.log('points', player.score, currentScore, target)
+        console.log('isWinner', isWinner)
+        if (isWinner) {
+          await setGameState({ gameId, state: GameState.FINISHED })
+        } else {
+          await updateCurrentPlayerId({ gameId, playerId: opponentId })
+        }
 
         wsServer.connections.forEach(conn => {
-          conn.sendUTF(JSON.stringify({ currentPlayer: opponentId, type }))
+          conn.sendUTF(JSON.stringify({ 
+            currentPlayer: isWinner ? currentPlayer : opponentId,
+            isWinner,
+            type 
+          }))
+        })
+      }
+      else if (type === MessageTypes.RESTART) {
+        const opponentId = getNextPlayerId({ game })
+        await restartGame({ gameId, currentPlayer: opponentId })
+        wsServer.connections.forEach(conn => {
+          conn.sendUTF(JSON.stringify({ 
+            currentPlayer: opponentId,
+            type 
+          }))
         })
       }
     })
